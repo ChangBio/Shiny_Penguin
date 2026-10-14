@@ -1,7 +1,7 @@
 
 ui <- page_navbar(
   
-  title = "Palmer Penguins App",
+  title = tags$span("ShinyPenguins", style = "font-weight: 700; font-size: 1.4rem;"),
   
   fillable = FALSE,
   
@@ -26,7 +26,7 @@ ui <- page_navbar(
         fill = FALSE,
         
         div(
-          h1("Explore the Penguins", class = "h2 fw-bold mb-1"),
+          h2("Explore the Penguins", class = "h2 fw-bold mb-1"),
           p(
             "Explore relationships between penguin species, ",
             "islands and physical measurements from the ",
@@ -103,11 +103,11 @@ ui <- page_navbar(
         col_widths = c(4, 4, 4),
         fill = FALSE,
         value_box(title = "Penguins", value = textOutput("n_penguins"),
-                  showcase = bsicons::bs_icon("people"), height = "110px"),
+                  showcase = bsicons::bs_icon("people"), height = "90px"),
         value_box(title = "Species", value = textOutput("n_species"),
-                  showcase = bsicons::bs_icon("gender-ambiguous"), height = "110px"),
+                  showcase = bsicons::bs_icon("tags"), height = "90px"),
         value_box(title = "Islands", value = textOutput("n_islands"),
-                  showcase = bsicons::bs_icon("geo"), height = "110px")
+                  showcase = bsicons::bs_icon("geo"), height = "90px")
       ),
       
       # plot (wide) + selected penguin (narrow) side by side
@@ -117,7 +117,7 @@ ui <- page_navbar(
         card(
           card_header("Penguin morphology"),
           card_body(
-            plotly::plotlyOutput("scatter", height = "450px")
+            plotly::plotlyOutput("scatter", height = "550px")
           )
         ),
         card(
@@ -150,23 +150,17 @@ ui <- page_navbar(
     
     title = "Compare & Analyse",
     
-    
     # --------------------------------------------------------
     # Introduction
     # --------------------------------------------------------
     
     div(
-      class = "p-4",
-      
-      h1(
-        "Compare & Analyse",
-        class = "fw-bold"
-      ),
-      
+      class = "px-3 pt-2 pb-1",
+      h2("Compare & Analyse", class = "h2 fw-bold mb-1"),
       p(
         "Compare measurements across species and investigate ",
         "relationships between physical characteristics.",
-        class = "lead"
+        class = "lead mb-1"
       )
     ),
     
@@ -176,64 +170,31 @@ ui <- page_navbar(
     # ========================================================
     
     card(
-      
-      card_header(
-        
+      card_header(h5("Measurement by species", class = "mb-0")),
+      card_body(
         layout_columns(
+          col_widths = c(8, 4),
+          fill = FALSE,
           
           div(
-            h5(
-              "Measurement by species",
-              class = "mb-0"
-            )
+            selectInput("measure", NULL,
+                        choices = c("Body mass" = "body_mass_g",
+                                    "Flipper length" = "flipper_length_mm",
+                                    "Bill length" = "bill_length_mm",
+                                    "Bill depth" = "bill_depth_mm"),
+                        selected = "body_mass_g",
+                        width = "220px"),
+            plotly::plotlyOutput("distribution", height = "350px")
           ),
           
-          selectInput(
-            "measure",
-            NULL,
-            
-            choices = c(
-              "Body mass" = "body_mass_g",
-              "Flipper length" = "flipper_length_mm",
-              "Bill length" = "bill_length_mm",
-              "Bill depth" = "bill_depth_mm"
-            ),
-            
-            selected = "body_mass_g",
-            width = "180px"
-          ),
-          
-          col_widths = c(8, 4)
-        )
-      ),
-      
-      card_body(
-        
-        plotly::plotlyOutput(
-          "distribution",
-          height = "450px"
+          div(
+            class = "d-flex flex-column justify-content-center h-100",
+            h5("Summary"),
+            div(style = "font-size: 1.1rem;", tableOutput("summary_table"))
+          )
         )
       )
     ),
-    
-    
-    # # ========================================================
-    # # SUMMARY STATISTICS
-    # # ========================================================
-    # 
-    # card(
-    #   
-    #   card_header(
-    #     "Summary statistics"
-    #   ),
-    #   
-    #   card_body(
-    #     
-    #     DT::DTOutput(
-    #       "summary_table"
-    #     )
-    #   )
-    # ),
     
     
     # ========================================================
@@ -241,86 +202,38 @@ ui <- page_navbar(
     # ========================================================
     
     card(
-      
-      card_header(
-        "Explore a relationship"
-      ),
-      
+      card_header(h5("Explore a relationship", class = "mb-0")),
       card_body(
-        
         layout_columns(
+          col_widths = c(8, 4),
+          fill = FALSE,
           
-          selectInput(
-            "x_relationship",
-            "X variable",
-            
-            choices = c(
-              "Flipper length" = "flipper_length_mm",
-              "Bill length" = "bill_length_mm",
-              "Bill depth" = "bill_depth_mm",
-              "Body mass" = "body_mass_g"
+          div(
+            layout_columns(
+              col_widths = c(6, 6),
+              fill = FALSE,
+              selectInput("x_relationship", "X variable",
+                          choices = c("Flipper length" = "flipper_length_mm",
+                                      "Bill length" = "bill_length_mm",
+                                      "Bill depth" = "bill_depth_mm",
+                                      "Body mass" = "body_mass_g"),
+                          selected = "flipper_length_mm"),
+              selectInput("y_relationship", "Y variable",
+                          choices = c("Body mass" = "body_mass_g",
+                                      "Flipper length" = "flipper_length_mm",
+                                      "Bill length" = "bill_length_mm",
+                                      "Bill depth" = "bill_depth_mm"),
+                          selected = "body_mass_g")
             ),
-            
-            selected = "flipper_length_mm"
+            plotly::plotlyOutput("relationship", height = "380px")
           ),
           
-          selectInput(
-            "y_relationship",
-            "Y variable",
-            
-            choices = c(
-              "Body mass" = "body_mass_g",
-              "Flipper length" = "flipper_length_mm",
-              "Bill length" = "bill_length_mm",
-              "Bill depth" = "bill_depth_mm"
-            ),
-            
-            selected = "body_mass_g"
-          ),
-          
-          selectInput(
-            "group_relationship",
-            "Group by",
-            
-            choices = c(
-              "Species" = "species",
-              "Sex" = "sex",
-              "Island" = "island"
-            ),
-            
-            selected = "species"
-          ),
-          
-          col_widths = c(4, 4, 4)
-        ),
-        
-        
-        # ------------------------------------------------------
-        # Relationship plot
-        # ------------------------------------------------------
-        
-        plotly::plotlyOutput(
-          "relationship",
-          height = "500px"
-        ),
-        
-        
-        # ------------------------------------------------------
-        # Statistics
-        # ------------------------------------------------------
-        
-        layout_columns(
-          
-          value_box(title = "Correlation (all penguins)", value = textOutput("correlation")),
-          value_box(title = "R² (all penguins)",          value = textOutput("r_squared")),
-          value_box(title = "Observations",               value = textOutput("n_observations")
-          ),
-          
-          col_widths = c(4, 4, 4)
-        ),
-        
-        h6("By group", class = "mt-3"),
-        tableOutput("group_stats")
+          div(
+            class = "d-flex flex-column justify-content-center h-100",
+            h5("By species"),
+            div(style = "font-size: 1.1rem;", tableOutput("group_stats"))
+          )
+        )
       )
     )
   ),

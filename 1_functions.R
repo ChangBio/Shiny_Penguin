@@ -144,8 +144,6 @@ penguin_distribution <- function(data, variable) {
 
 # ============== relationship plot ==============
 
-# ============== relationship plot ==============
-
 penguin_relationship <- function(data, x, y, group) {
   
   plot_ly(
@@ -170,41 +168,10 @@ penguin_relationship <- function(data, x, y, group) {
     )
 }
 
-
-# # ============= summary statistics================
-# 
-# summary_by_species <- function(data,variable) {
-#   
-#   data %>%
-#     
-#     group_by(species) %>%
-#     
-#     summarise(n = sum(!is.na(.data[[variable]])),
-#       
-#       mean = mean(.data[[variable]], na.rm = TRUE),
-#       
-#       median = median(.data[[variable]], na.rm = TRUE),
-#       
-#       sd = sd(.data[[variable]], na.rm = TRUE),
-#       
-#       .groups = "drop"
-#     )
-# }
-
-
 # ================= correlation ==================
 
 correlation_value <- function(data, x, y) {
   
   cor(data[[x]], data[[y]], use = "complete.obs")
   
-}
-
-# ================== R-squared ===================
-
-regression_r_squared <- function(data, x, y) {
-  
-  model <- lm(reformulate(x, response = y),data = data)
-  
-  summary(model)$r.squared
 }

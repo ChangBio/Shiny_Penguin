@@ -34,12 +34,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "species", selected = "All")
     
     updateSelectInput(session, "island", selected = "All")
-    
-    updateSelectInput(session, "sex", selected = "All")
-    
-    updateSelectInput(session,"x_var", selected = "bill_length_mm")
-    
-    updateSelectInput(session,"y_var", selected = "bill_depth_mm")
+
   })
   
   
@@ -85,8 +80,11 @@ server <- function(input, output, session) {
   
   output$scatter <- renderPlotly({
     
-    req(
-      nrow(filtered_data()) > 0
+    validate(
+      need(
+        nrow(filtered_data()) > 0,
+        "No penguins match the selected filters. Please adjust your filters."
+      )
     )
     
     penguin_scatter(
@@ -95,27 +93,6 @@ server <- function(input, output, session) {
       y = input$y_var
     )
   })
-  
-  
-  # ----------------------------------------------------------
-  # Selected penguin
-  # ----------------------------------------------------------
-  
-  selected_penguin <- reactive({
-    
-    click <- event_data(
-      "plotly_click",
-      source = "penguins"
-    )
-    
-    req(click)
-    
-    penguins_data %>%
-      filter(
-        penguin_id == click$customdata[[1]]
-      )
-  })
-  
 
   
   # ----------------------------------------------------------
@@ -137,7 +114,10 @@ server <- function(input, output, session) {
     
     penguin <- selected_penguin()
     
-    if (is.null(penguin) || nrow(penguin) != 1) {
+    if (
+      is.null(penguin) || nrow(penguin) != 1 ||
+      !penguin$penguin_id %in% filtered_data()$penguin_id
+    ) {
       return(
         p(
           em("Click a penguin in the plot to see its details."),
@@ -202,34 +182,17 @@ server <- function(input, output, session) {
     )
   })
   
-  
-  # ----------------------------------------------------------
-  # Summary statistics
-  # ----------------------------------------------------------
-  
-  # output$summary_table <- renderDT({
-  #   
-  #   summary_by_species(
-  #     data = penguins_data,
-  #     variable = input$measure
-  #   ) %>%
-  #     
-  #     mutate(
-  #       mean = round(mean, 1),
-  #       median = round(median, 1),
-  #       sd = round(sd, 1)
-  #     ) %>%
-  #     
-  #     datatable(
-  #       rownames = FALSE,
-  #       
-  #       options = list(
-  #         dom = "t",
-  #         pageLength = 5
-  #       )
-  #     )
-  # })
-  
+  output$summary_table <- renderTable({
+    penguins_data %>%
+      group_by(Species = as.character(species)) %>%
+      summarise(
+        n      = sum(!is.na(.data[[input$measure]])),
+        Mean   = round(mean(.data[[input$measure]], na.rm = TRUE), 1),
+        Median = round(median(.data[[input$measure]], na.rm = TRUE), 1),
+        SD     = round(sd(.data[[input$measure]], na.rm = TRUE), 1),
+        .groups = "drop"
+      )
+  }, width = "100%", spacing = "l", digits = 1)
   
   # ----------------------------------------------------------
   # Relationship data
@@ -241,10 +204,8 @@ server <- function(input, output, session) {
       filter(
         !is.na(.data[[input$x_relationship]]),
         !is.na(.data[[input$y_relationship]])
-      ) %>%
-      mutate(
-        sex = ifelse(is.na(sex), "Unknown", sex)
-      )
+      ) %>% 
+      mutate(sex = format_sex(sex))
   })
   
   
@@ -254,68 +215,43 @@ server <- function(input, output, session) {
   
   output$relationship <- renderPlotly({
     
+    validate(
+      need(
+        input$x_relationship != input$y_relationship,
+        "Please select two different variables for X and Y."
+      )
+    )
+    
     penguin_relationship(
       data = relationship_data(),
       x = input$x_relationship,
       y = input$y_relationship,
-      group = input$group_relationship
+      group = "species"
     )
   })
   
   
-  # ----------------------------------------------------------
-  # Correlation
-  # ----------------------------------------------------------
-  
-  output$correlation <- renderText({
-    
-    correlation_value(
-      data = relationship_data(),
-      x = input$x_relationship,
-      y = input$y_relationship
-    ) %>%
-      round(2)
-  })
-  
-  
-  # ----------------------------------------------------------
-  # R squared
-  # ----------------------------------------------------------
-  
-  output$r_squared <- renderText({
-    
-    regression_r_squared(
-      data = relationship_data(),
-      x = input$x_relationship,
-      y = input$y_relationship
-    ) %>%
-      round(2)
-  })
-  
-  
-  # ----------------------------------------------------------
-  # Number of observations
-  # ----------------------------------------------------------
-  
-  output$n_observations <- renderText({
-    
-    nrow(relationship_data())
-  })
-  
   output$group_stats <- renderTable({
     
+    x <- input$x_relationship
+    y <- input$y_relationship
     data <- relationship_data()
-    g <- input$group_relationship
     
-    data %>%
-      group_by(Group = .data[[g]]) %>%
+    by_species <- data %>%
+      group_by(Species = as.character(species)) %>%
       summarise(
         n = n(),
-        Correlation = round(cor(.data[[input$x_relationship]],
-                                .data[[input$y_relationship]]), 2),
+        Correlation = cor(.data[[x]], .data[[y]]),
         .groups = "drop"
-      ) %>%
-      mutate(`R²` = round(Correlation^2, 2))
-  })
+      )
+    
+    overall <- tibble(
+      Species = "All penguins",
+      n = nrow(data),
+      Correlation = cor(data[[x]], data[[y]])
+    )
+    
+    bind_rows(by_species, overall)
+  }, width = "100%", spacing = "l", digits = 2)
   
 }

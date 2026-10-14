@@ -1,7 +1,6 @@
 library(bsicons)
 library(bslib)
 library(dplyr)
-library(DT)
 library(palmerpenguins)
 library(plotly)
 library(shiny)
