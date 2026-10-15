@@ -4,7 +4,7 @@ An interactive R Shiny dashboard for exploring the Palmer Penguins dataset. Filt
 
 <br>
 
-**Live app:** https://changbio.shinyapps.io/ShinyPenguins/
+**Live app:** https://changbio.shinyapps.io/Shiny_Penguin/
 
 ![](app_screenshot/penguinapp.png)
 
