@@ -115,13 +115,13 @@ ui <- page_navbar(
         col_widths = c(8, 4),
         fill = FALSE,
         card(
-          card_header("Penguin morphology"),
+          card_header(h5("Penguin morphology", class = "mb-0")),
           card_body(
             plotly::plotlyOutput("scatter", height = "550px")
           )
         ),
         card(
-          card_header("Selected penguin"),
+          card_header(h5("Selected penguin", class = "mb-0")),
           card_body(
             uiOutput("selected_penguin"),
             hr(),

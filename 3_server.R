@@ -32,8 +32,8 @@ server <- function(input, output, session) {
   observeEvent(input$reset, {
     
     updateSelectInput(session, "species", selected = "All")
-    
     updateSelectInput(session, "island", selected = "All")
+    updateSelectInput(session, "sex", selected = "All")
 
   })
   
@@ -192,7 +192,7 @@ server <- function(input, output, session) {
         SD     = round(sd(.data[[input$measure]], na.rm = TRUE), 1),
         .groups = "drop"
       )
-  }, width = "100%", spacing = "l", digits = 1)
+  }, width = "100%", spacing = "l")
   
   # ----------------------------------------------------------
   # Relationship data
@@ -232,6 +232,12 @@ server <- function(input, output, session) {
   
   
   output$group_stats <- renderTable({
+    
+    validate(
+      need(
+        input$x_relationship != input$y_relationship, ""
+        )
+      )
     
     x <- input$x_relationship
     y <- input$y_relationship

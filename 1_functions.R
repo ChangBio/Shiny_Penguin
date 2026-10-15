@@ -40,18 +40,14 @@ format_value <- function(x, digits = 1) {
     return("—")
   }
   
-  format(
-    round(x, digits),
-    big.mark = ",",
-    trim = TRUE
-  )
+  formatC(x, format = "f", digits = digits, big.mark = ",")
 }
 
 
 # ======== scatter plot for explore tab =========
 
 penguin_scatter <- function(data, x, y) {
-  
+
   data <- data %>%
     mutate(
       sex_label = factor(
@@ -59,32 +55,32 @@ penguin_scatter <- function(data, x, y) {
         levels = c("Female", "Male", "Unknown")
       )
     )
-  
+
   plot_ly(
     data = data,
-    
+
     x = ~.data[[x]],
     y = ~.data[[y]],
-    
+
     type = "scatter",
     mode = "markers",
-    
+
     source = "penguins",
-    
+
     color = ~species,
     colors = species_colors,
-    
+
     symbol = ~sex_label,
     symbols = c(
       "Female"  = "circle",
       "Male"    = "triangle-up",
       "Unknown" = "circle-open"
     ),
-    
+
     marker = list(size = 8, line = list(width = 1.5)),
-    
+
     customdata = ~penguin_id,
-    
+
     text = ~paste0(
       "<b>", species, "</b>",
       "<br>Island: ", island,
@@ -94,50 +90,62 @@ penguin_scatter <- function(data, x, y) {
       "<br>Flipper length: ",
       ifelse(is.na(flipper_length_mm), "Unknown", paste0(flipper_length_mm, " mm"))
     ),
-    
+
     hoverinfo = "text"
   ) %>%
     layout(
       xaxis = list(title = variable_label(x)),
-      yaxis = list(title = variable_label(y)),
-      legend = list(orientation = "h", y = -0.15),
-      margin = list(b = 80)
+      yaxis = list(title = variable_label(y), automargin = TRUE),
+      legend = list(
+        orientation = "h",
+        xref = "container", x = 0.5, xanchor = "center",
+        yref = "container", y = 0,   yanchor = "bottom"
+      ),
+      margin = list(b = 120)
+    ) %>%
+    config(
+      toImageButtonOptions = list(
+        format   = "png",
+        filename = "penguin_scatter",
+        scale    = 3
+      )
     )
 }
+
 
 # ========== box plot for compare tab ===========
 
 penguin_distribution <- function(data, variable) {
-  
+
   data <- data %>%
-    filter(
-      !is.na(.data[[variable]])
-    )
-  
+    filter(!is.na(.data[[variable]]))
+
   plot_ly(
     data = data,
-    
+
     x = ~species,
     y = ~.data[[variable]],
-    
+
     color = ~species,
     colors = species_colors,
-    
+
     type = "box",
-    
+
     boxpoints = "all",
     jitter = 0.25,
     pointpos = 0
-    
   ) %>%
-    
     layout(
-      
-      xaxis = list(title = NULL),
-      
+      xaxis = list(title = ""),
       yaxis = list(title = variable_label(variable)),
-      
       showlegend = FALSE
+    ) %>%
+    config(
+      toImageButtonOptions = list(
+        format   = "png",
+        filename = "penguin_boxplot",
+        scale    = 3
+      )
     )
 }
 
@@ -145,7 +153,7 @@ penguin_distribution <- function(data, variable) {
 # ============== relationship plot ==============
 
 penguin_relationship <- function(data, x, y, group) {
-  
+
   plot_ly(
     data = data,
     x = ~.data[[x]],
@@ -163,15 +171,15 @@ penguin_relationship <- function(data, x, y, group) {
   ) %>%
     layout(
       xaxis = list(title = variable_label(x)),
-      yaxis = list(title = variable_label(y)),
-      legend = list(orientation = "h")
+      yaxis = list(title = variable_label(y), automargin = TRUE),
+      legend = list(orientation = "h", x = 0, y = 1.12),
+      margin = list(t = 60)
+    ) %>%
+    config(
+      toImageButtonOptions = list(
+        format   = "png",
+        filename = "penguin_relationship",
+        scale    = 3
+      )
     )
-}
-
-# ================= correlation ==================
-
-correlation_value <- function(data, x, y) {
-  
-  cor(data[[x]], data[[y]], use = "complete.obs")
-  
 }
